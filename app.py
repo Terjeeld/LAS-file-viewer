@@ -3,39 +3,32 @@ import lasio
 import plotly.graph_objs as go
 import numpy as np
 
-st.set_page_config(page_title="LAS Viewer", layout="wide")
+st.set_page_config(page_title="Petrophysical LAS Viewer", layout="wide")
 st.title("🛢️ Petrophysical LAS Viewer")
 
-# --- Sidebar controls ---
+# Sidebar
 st.sidebar.header("⚙️ Options")
-
-# Upload LAS file
 uploaded_file = st.sidebar.file_uploader("Upload a .las file", type=["las"])
-
-# Unit system
 unit_system = st.sidebar.radio("Select Unit System", ("Metric", "Imperial"))
 
-# Conversion map
 unit_conversions = {
     "m": ("ft", lambda x: x * 3.28084),
     "g/cm3": ("lb/ft3", lambda x: x * 62.428),
-    "us/ft": ("us/ft", lambda x: x),  # No change
-    "ohm.m": ("ohm.m", lambda x: x),  # No change
-    "in": ("in", lambda x: x),        # No change
-    "m3/m3": ("v/v", lambda x: x)     # No change
+    "us/ft": ("us/ft", lambda x: x),
+    "ohm.m": ("ohm.m", lambda x: x),
+    "in": ("in", lambda x: x),
+    "m3/m3": ("v/v", lambda x: x)
 }
 
-# --- Main logic ---
 if uploaded_file:
     try:
-        las = lasio.read(uploaded_file, encoding="utf-8")
+        # This fixes the error you're seeing
+        las = lasio.read(uploaded_file)
         st.success(f"Loaded LAS file: {uploaded_file.name}")
     except Exception as e:
         st.error(f"Failed to read LAS file: {e}")
         st.stop()
 
-
-    # --- Curve info ---
     curves = las.curves
     available = [curve.mnemonic for curve in curves]
     st.sidebar.subheader("📈 Select Curves")
@@ -43,14 +36,12 @@ if uploaded_file:
     track2 = st.sidebar.multiselect("Track 2 (e.g. RHOB/NPHI)", available, default=["RHOB", "NPHI"])
     track3 = st.sidebar.multiselect("Track 3 (e.g. RT)", available, default=["RT"] if "RT" in available else [])
 
-    # Depth curve
     depth = las["DEPT"]
     depth_unit = "m"
     if unit_system == "Imperial":
         depth = depth * 3.28084
         depth_unit = "ft"
 
-    # --- Function to plot a single track ---
     def make_track(curve_names, title, highlight_shale=False):
         fig = go.Figure()
 
@@ -64,7 +55,6 @@ if uploaded_file:
                 else:
                     unit_label = unit
 
-                # Remove nulls
                 mask = data != -999.25
                 fig.add_trace(go.Scatter(
                     x=data[mask],
@@ -73,9 +63,9 @@ if uploaded_file:
                     name=f"{curve} ({unit_label})"
                 ))
 
-                # Shale highlight
+                # Shale shading
                 if highlight_shale and curve == "GR":
-                    gr_threshold = 75  # API
+                    gr_threshold = 75
                     shale_mask = (data > gr_threshold) & (data != -999.25)
                     fig.add_trace(go.Scatter(
                         x=data[shale_mask],
@@ -95,7 +85,7 @@ if uploaded_file:
         )
         return fig
 
-    # --- Layout with 3 tracks ---
+    # Layout with 3 tracks
     col1, col2, col3 = st.columns(3)
     with col1:
         st.plotly_chart(make_track(track1, "Track 1", highlight_shale=True), use_container_width=True)
