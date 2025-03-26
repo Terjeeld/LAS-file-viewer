@@ -1,13 +1,15 @@
 import streamlit as st
 import lasio
 import matplotlib.pyplot as plt
+import io
 
 st.title("🌍 LAS File Viewer")
 
 uploaded_file = st.file_uploader("Upload a .las file", type=["las"])
 
 if uploaded_file:
-    las = lasio.read(uploaded_file)
+    
+    las = lasio.read(io.StringIO(uploaded_file.getvalue().decode("utf-8")))
     
     st.subheader("Header Info")
     st.text(str(las.header))
