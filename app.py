@@ -34,9 +34,9 @@ if uploaded_file:
     curves = las.curves
     available = [curve.mnemonic for curve in curves]
     st.sidebar.subheader("📈 Select Curves")
-    track1 = st.sidebar.multiselect("Track 1 (e.g. GR)", available, default=["GR"])
+    track1 = st.sidebar.multiselect("Track 1 (e.g. GR)", available, default=["GR"] if "GR" in available else [available[0]])
     track2 = st.sidebar.multiselect("Track 2 (e.g. RHOB/NPHI)", available, default=["RHOB", "NPHI"])
-    track3 = st.sidebar.multiselect("Track 3 (e.g. RT)", available, default=["RT"])
+    track3 = st.sidebar.multiselect("Track 3 (e.g. RT)", available, default=["RT"] if "RT" in available else [])
 
     # Depth curve
     depth = las["DEPT"]
@@ -68,7 +68,36 @@ if uploaded_file:
                     name=f"{curve} ({unit_label})"
                 ))
 
-                # Shale highlight if GR is above threshold
-                if highlight_shale and curve.upper() == "GR":
+                # Shale highlight
+                if highlight_shale and curve == "GR":
                     gr_threshold = 75  # API
-                    shale_mask = (data > gr_threshold) & (data != -999
+                    shale_mask = (data > gr_threshold) & (data != -999.25)
+                    fig.add_trace(go.Scatter(
+                        x=data[shale_mask],
+                        y=depth[shale_mask],
+                        mode="lines",
+                        line=dict(color="rgba(0,100,0,0.2)", width=10),
+                        name="Shale Zone",
+                        showlegend=False
+                    ))
+
+        fig.update_layout(
+            title=title,
+            yaxis=dict(title=f"Depth ({depth_unit})", autorange="reversed"),
+            height=800,
+            margin=dict(l=10, r=10, t=30, b=10),
+            showlegend=True
+        )
+        return fig
+
+    # --- Layout with 3 tracks ---
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.plotly_chart(make_track(track1, "Track 1", highlight_shale=True), use_container_width=True)
+    with col2:
+        st.plotly_chart(make_track(track2, "Track 2"), use_container_width=True)
+    with col3:
+        st.plotly_chart(make_track(track3, "Track 3"), use_container_width=True)
+
+else:
+    st.info("👈 Upload a .las file from the sidebar to get started!")
