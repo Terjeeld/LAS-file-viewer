@@ -8,13 +8,23 @@ from PIL import Image
 # Set page layout
 st.set_page_config(page_title="Petrophysical LAS Viewer", layout="wide")
 
-# === Load logo and display with title ===
-logo = Image.open("logo.png")  # Make sure this file exists in your repo!
+# === Load logo and show beside title ===
+logo = Image.open("logo.png")
+
+# Style: larger logo and better vertical alignment
 col1, col2 = st.columns([1, 10])
 with col1:
-    st.image(logo, width=50)
+    st.image(logo, width=100)  # Adjust size here
 with col2:
-    st.markdown("<h1 style='margin-bottom: 0;'>Petrophysical LAS Viewer</h1>", unsafe_allow_html=True)
+    st.markdown(
+        """
+        <div style='display: flex; align-items: center; height: 100%;'>
+            <h1 style='margin: 0;'>Petrophysical LAS Viewer</h1>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
 
 # === Sidebar controls ===
 st.sidebar.header("⚙️ Options")
