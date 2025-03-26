@@ -27,8 +27,13 @@ unit_conversions = {
 
 # --- Main logic ---
 if uploaded_file:
-    las = lasio.read(uploaded_file, encoding="utf-8")
-    st.success(f"Loaded LAS file: {uploaded_file.name}")
+    try:
+        las = lasio.read(uploaded_file, encoding="utf-8")
+        st.success(f"Loaded LAS file: {uploaded_file.name}")
+    except Exception as e:
+        st.error(f"Failed to read LAS file: {e}")
+        st.stop()
+
 
     # --- Curve info ---
     curves = las.curves
