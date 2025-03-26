@@ -2,3 +2,4 @@ streamlit
 lasio
 plotly
 numpy
+Pillow
