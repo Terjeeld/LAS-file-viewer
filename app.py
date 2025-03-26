@@ -6,7 +6,7 @@ from io import StringIO
 from PIL import Image
 
 # Set page layout
-st.set_page_config(page_title="Petrophysical LAS Viewer", layout="wide")
+st.set_page_config(page_title="Interwell LAS Viewer", layout="wide")
 
 # === Load logo and show beside title ===
 logo = Image.open("logo.png")
