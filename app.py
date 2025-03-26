@@ -2,6 +2,7 @@ import streamlit as st
 import lasio
 import plotly.graph_objs as go
 import numpy as np
+from io import BytesIO
 
 st.set_page_config(page_title="Petrophysical LAS Viewer", layout="wide")
 st.title("🛢️ Petrophysical LAS Viewer")
@@ -22,8 +23,9 @@ unit_conversions = {
 
 if uploaded_file:
     try:
-        # This fixes the error you're seeing
-        las = lasio.read(uploaded_file)
+        # Convert file to binary stream
+        file_bytes = uploaded_file.read()
+        las = lasio.read(BytesIO(file_bytes))  # Use BytesIO for binary stream
         st.success(f"Loaded LAS file: {uploaded_file.name}")
     except Exception as e:
         st.error(f"Failed to read LAS file: {e}")
