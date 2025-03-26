@@ -19,7 +19,7 @@ with col2:
     st.markdown(
         """
         <div style='display: flex; align-items: center; height: 100%;'>
-            <h1 style='margin: 0;'>Petrophysical LAS Viewer</h1>
+            <h1 style='margin: 0;'>Interwell LAS Viewer</h1>
         </div>
         """,
         unsafe_allow_html=True
