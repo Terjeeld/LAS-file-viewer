@@ -4,8 +4,28 @@ import plotly.graph_objs as go
 import numpy as np
 from io import StringIO
 
+# Curve descriptions dictionary
+curve_info = {
+    "GR": "Gamma Ray (shale content indicator)",
+    "CALI": "Caliper (borehole diameter)",
+    "RT": "True Resistivity (formation resistivity)",
+    "RHOB": "Bulk Density",
+    "NPHI": "Neutron Porosity",
+    "DTC": "Compressional Sonic (us/ft)",
+    "DTS": "Shear Sonic (us/ft)",
+    "RXO": "Resistivity of flushed zone",
+    "DRHO": "Density correction",
+    "TVD": "True Vertical Depth",
+    "TVDSS": "TVD Sub Sea",
+    "BS": "Bit Size or Borehole Size",
+    "DCAL": "Delta Caliper",
+    "HAZI": "Hole Azimuth",
+    "HDEVI": "Hole Deviation",
+}
+
+
 st.set_page_config(page_title="Petrophysical LAS Viewer", layout="wide")
-st.title("🛢️ Petrophysical LAS Viewer")
+st.title("🛢️ Interwell LAS Viewer")
 
 # Sidebar
 st.sidebar.header("⚙️ Options")
@@ -37,6 +57,15 @@ if uploaded_file:
     track1 = st.sidebar.multiselect("Track 1 (e.g. GR)", available, default=["GR"] if "GR" in available else [available[0]])
     track2 = st.sidebar.multiselect("Track 2 (e.g. RHOB/NPHI)", available, default=["RHOB", "NPHI"])
     track3 = st.sidebar.multiselect("Track 3 (e.g. RT)", available, default=["RT"] if "RT" in available else [])
+
+# Display descriptions
+def show_curve_descriptions(selected_curves):
+    for curve in selected_curves:
+        description = curve_info.get(curve, "No description available.")
+        st.sidebar.markdown(f"**{curve}**: {description}")
+        
+st.sidebar.markdown("### ℹ️ Curve Info")
+show_curve_descriptions(track1 + track2 + track3)
 
     depth = las["DEPT"]
     depth_unit = "m"
