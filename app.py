@@ -116,6 +116,16 @@ if uploaded_file:
     tops_dict = {name.strip(): float(depth.strip()) for name, depth in tops}
 
     # === Plotting Function ===
+
+    st.sidebar.subheader("📊 Debug Curve Data")
+
+    # Check if selected curves have valid data
+    for track in [track1, track2, track3]:
+        for curve in track:
+            if curve in las.keys():
+                valid_data = las[curve][las[curve] != -999.25]  # Remove null values
+                st.sidebar.write(f"✔ {curve}: {len(valid_data)} valid points")
+
     def make_track(curve_names, title, highlight_shale=False):
         fig = go.Figure()
 
