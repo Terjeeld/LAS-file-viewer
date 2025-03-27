@@ -180,3 +180,9 @@ if uploaded_file:
 
 else:
     st.info("👈 Upload a `.las` file to get started")
+
+    st.sidebar.subheader("🛠 Debug Info")
+    st.sidebar.write(f"Detected Depth Column: **{depth_curve}**")
+    st.sidebar.write(f"Depth Range: {depth.min()} to {depth.max()}")  # Shows min/max depth
+    st.sidebar.write(f"Total Depth Points: {len(depth)}")
+
