@@ -2,29 +2,20 @@ import streamlit as st
 import lasio
 import plotly.graph_objs as go
 import numpy as np
+import pandas as pd
 from io import StringIO
 from PIL import Image
 
-# Set page layout
-st.set_page_config(page_title="Interwell LAS Viewer", layout="wide")
+# === Set page layout ===
+st.set_page_config(page_title="Petrophysical LAS Viewer", layout="wide")
 
-# === Load logo and show beside title ===
-logo = Image.open("logo.png")
-
-# Style: larger logo and better vertical alignment
+# === Load logo and title ===
+logo = Image.open("logo.png")  # Ensure logo.png is in the repo
 col1, col2 = st.columns([1, 10])
 with col1:
-    st.image(logo, width=100)  # Adjust size here
+    st.image(logo, width=100)
 with col2:
-    st.markdown(
-        """
-        <div style='display: flex; align-items: center; height: 100%;'>
-            <h1 style='margin: 0;'>Interwell LAS Viewer</h1>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
+    st.markdown("<h1 style='margin-bottom: 0;'>Petrophysical LAS Viewer</h1>", unsafe_allow_html=True)
 
 # === Sidebar controls ===
 st.sidebar.header("⚙️ Options")
@@ -73,23 +64,43 @@ if uploaded_file:
     curves = las.curves
     available = [curve.mnemonic for curve in curves]
 
+    # === Search bar for quick curve selection ===
+    search_query = st.sidebar.text_input("🔍 Search Curves", "")
+    filtered_curves = [c for c in available if search_query.lower() in c.lower()] if search_query else available
+
     st.sidebar.subheader("📈 Select Curves")
-    track1 = st.sidebar.multiselect("Track 1 (e.g. GR)", available, default=["GR"] if "GR" in available else [available[0]])
-    track2 = st.sidebar.multiselect("Track 2 (e.g. RHOB/NPHI)", available, default=["RHOB", "NPHI"])
-    track3 = st.sidebar.multiselect("Track 3 (e.g. RT)", available, default=["RT"] if "RT" in available else [])
+    st.sidebar.markdown("**Available Curves in LAS File:**")
+    st.sidebar.write(", ".join(available))
 
-    # === Curve Descriptions ===
-    st.sidebar.markdown("### ℹ️ Curve Info")
-    for curve in track1 + track2 + track3:
-        desc = curve_info.get(curve, "No description available.")
-        st.sidebar.markdown(f"**{curve}**: {desc}")
+    # Function to auto-select defaults if they exist, otherwise pick first N available
+    def get_default_curves(preferred, available, num=2):
+        defaults = [c for c in preferred if c in available]
+        return defaults if defaults else available[:num]
 
-    # === Get depth and convert if needed ===
+    # Dynamic selection with search filtering
+    track1 = st.sidebar.multiselect("Track 1 (e.g. GR)", filtered_curves, default=get_default_curves(["GR"], available, 1))
+    track2 = st.sidebar.multiselect("Track 2 (e.g. RHOB/NPHI)", filtered_curves, default=get_default_curves(["RHOB", "NPHI"], available, 2))
+    track3 = st.sidebar.multiselect("Track 3 (e.g. RT)", filtered_curves, default=get_default_curves(["RT"], available, 1))
+
+    # === Show warnings if expected curves are missing ===
+    missing_curves = [c for c in ["GR", "RHOB", "NPHI", "RT"] if c not in available]
+    if missing_curves:
+        st.sidebar.warning(f"⚠️ Missing common curves: {', '.join(missing_curves)}. Using first available curves instead.")
+
+    # === Depth conversion ===
     depth = las["DEPT"]
     depth_unit = "m"
     if unit_system == "Imperial":
         depth = depth * 3.28084
         depth_unit = "ft"
+
+    # === Formation tops overlay (User input) ===
+    st.sidebar.subheader("📌 Formation Tops")
+    tops_data = st.sidebar.text_area("Enter formation tops (Format: Name, Depth)", "Top1, 1000\nTop2, 1500")
+    tops = [line.split(",") for line in tops_data.split("\n") if len(line.split(",")) == 2]
+
+    # Convert to dictionary (formation: depth)
+    tops_dict = {name.strip(): float(depth.strip()) for name, depth in tops}
 
     # === Plotting Function ===
     def make_track(curve_names, title, highlight_shale=False):
@@ -126,6 +137,12 @@ if uploaded_file:
                         showlegend=False
                     ))
 
+        # Add formation tops
+        for top_name, top_depth in tops_dict.items():
+            fig.add_shape(type="line", x0=min(data), x1=max(data), y0=top_depth, y1=top_depth,
+                          line=dict(color="red", width=2, dash="dash"))
+            fig.add_annotation(x=max(data), y=top_depth, text=top_name, showarrow=False, font=dict(color="red"))
+
         fig.update_layout(
             title=title,
             yaxis=dict(title=f"Depth ({depth_unit})", autorange="reversed"),
@@ -135,14 +152,27 @@ if uploaded_file:
         )
         return fig
 
-    # === Plot Layout ===
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.plotly_chart(make_track(track1, "Track 1", highlight_shale=True), use_container_width=True)
-    with col2:
-        st.plotly_chart(make_track(track2, "Track 2"), use_container_width=True)
-    with col3:
-        st.plotly_chart(make_track(track3, "Track 3"), use_container_width=True)
+# === Plot Layout ===
+st.subheader("📊 Log Tracks")
+
+# Plot each track separately, one below the other
+if track1:
+    st.plotly_chart(make_track(track1, "Track 1 (e.g. GR)", highlight_shale=True), use_container_width=True)
+
+if track2:
+    st.plotly_chart(make_track(track2, "Track 2 (e.g. RHOB/NPHI)"), use_container_width=True)
+
+if track3:
+    st.plotly_chart(make_track(track3, "Track 3 (e.g. RT)"), use_container_width=True)
+
+
+    # === CSV Export ===
+    st.sidebar.subheader("📥 Export Data")
+    selected_curves = track1 + track2 + track3
+    if selected_curves:
+        df = pd.DataFrame({curve: las[curve] for curve in selected_curves})
+        df["Depth"] = depth
+        st.sidebar.download_button("Download CSV", df.to_csv(index=False), "las_data.csv", "text/csv")
 
 else:
     st.info("👈 Upload a `.las` file to get started")
