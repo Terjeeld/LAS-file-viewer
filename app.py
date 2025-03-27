@@ -75,14 +75,20 @@ if uploaded_file:
 
     # === Curve Selection & Plotting ===
 
-    st.sidebar.subheader("📈 Select Curves")
-    st.sidebar.markdown("**Available Curves in LAS File:**")
-    st.sidebar.write(", ".join(available))
+    # Ensure `available` is a list of strings
+    available = [curve.mnemonic for curve in las.curves] if hasattr(las, "curves") else []
     
-    # Let user select any curve from the LAS file
-    track1 = st.sidebar.multiselect("Track 1", available)
-    track2 = st.sidebar.multiselect("Track 2", available)
-    track3 = st.sidebar.multiselect("Track 3", available)
+    if available:
+        st.sidebar.subheader("📈 Select Curves")
+        st.sidebar.markdown("**Available Curves in LAS File:**")
+        st.sidebar.write(", ".join(available))
+    
+        # Let the user select from all available curves
+        track1 = st.sidebar.multiselect("Track 1", available)
+        track2 = st.sidebar.multiselect("Track 2", available)
+        track3 = st.sidebar.multiselect("Track 3", available)
+    else:
+        st.sidebar.error("⚠️ No curves found in this LAS file.")
 
 
 
