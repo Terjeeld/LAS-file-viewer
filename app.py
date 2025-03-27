@@ -72,11 +72,6 @@ if uploaded_file:
         st.error("⚠️ No valid depth column found (Checked: DEPT, DEPTH, MD, TVD). Cannot proceed.")
         st.stop()
 
-    # === Debug Info in Sidebar ===
-    st.sidebar.subheader("🛠 Debug Info")
-    st.sidebar.write(f"✅ Detected Depth Column: **{depth_curve}**")
-    st.sidebar.write(f"📏 Depth Range: {depth.min()} to {depth.max()}")
-    st.sidebar.write(f"🔢 Total Depth Points: {len(depth)}")
 
     # === Curve Selection & Plotting ===
 
