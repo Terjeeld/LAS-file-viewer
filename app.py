@@ -82,13 +82,17 @@ if uploaded_file:
     track2 = st.sidebar.multiselect("Track 2 (e.g. RHOB/NPHI)", filtered_curves, default=get_default_curves(["RHOB", "NPHI"], available, 2))
     track3 = st.sidebar.multiselect("Track 3 (e.g. RT)", filtered_curves, default=get_default_curves(["RT"], available, 1))
 
-    # === Show warnings if expected curves are missing ===
-    missing_curves = [c for c in ["GR", "RHOB", "NPHI", "RT"] if c not in available]
-    if missing_curves:
-        st.sidebar.warning(f"⚠️ Missing common curves: {', '.join(missing_curves)}. Using first available curves instead.")
 
     # === Depth conversion ===
-    depth = las["DEPT"]
+    depth_mnemonics = ["DEPT", "DEPTH", "MD", "TVD"]
+    depth_curve = next((mn for mn in depth_mnemonics if mn in las.keys()), None)
+    
+    if depth_curve:
+        depth = las[depth_curve]
+    else:
+        st.error("No valid depth column found (Checked: DEPT, DEPTH, MD, TVD). Cannot proceed.")
+    st.stop()
+
     depth_unit = "m"
     if unit_system == "Imperial":
         depth = depth * 3.28084
