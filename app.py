@@ -78,26 +78,17 @@ if uploaded_file:
     st.sidebar.write(f"📏 Depth Range: {depth.min()} to {depth.max()}")
     st.sidebar.write(f"🔢 Total Depth Points: {len(depth)}")
 
-    # === Continue with Curve Selection & Plotting ===
-
-
-    # === Search bar for quick curve selection ===
-    search_query = st.sidebar.text_input("🔍 Search Curves", "")
-    filtered_curves = [c for c in available if search_query.lower() in c.lower()] if search_query else available
+    # === Curve Selection & Plotting ===
 
     st.sidebar.subheader("📈 Select Curves")
     st.sidebar.markdown("**Available Curves in LAS File:**")
     st.sidebar.write(", ".join(available))
+    
+    # Let user select any curve from the LAS file
+    track1 = st.sidebar.multiselect("Track 1", available)
+    track2 = st.sidebar.multiselect("Track 2", available)
+    track3 = st.sidebar.multiselect("Track 3", available)
 
-    # Function to auto-select defaults if they exist, otherwise pick first N available
-    def get_default_curves(preferred, available, num=2):
-        defaults = [c for c in preferred if c in available]
-        return defaults if defaults else available[:num]
-
-    # Dynamic selection with search filtering
-    track1 = st.sidebar.multiselect("Track 1 (e.g. GR)", filtered_curves, default=get_default_curves(["GR"], available, 1))
-    track2 = st.sidebar.multiselect("Track 2 (e.g. RHOB/NPHI)", filtered_curves, default=get_default_curves(["RHOB", "NPHI"], available, 2))
-    track3 = st.sidebar.multiselect("Track 3 (e.g. RT)", filtered_curves, default=get_default_curves(["RT"], available, 1))
 
 
     # === Depth conversion ===
