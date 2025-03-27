@@ -152,18 +152,18 @@ if uploaded_file:
         )
         return fig
 
-# === Plot Layout ===
-st.subheader("📊 Log Tracks")
-
-# Plot each track separately, one below the other
-if track1:
-    st.plotly_chart(make_track(track1, "Track 1 (e.g. GR)", highlight_shale=True), use_container_width=True)
-
-if track2:
-    st.plotly_chart(make_track(track2, "Track 2 (e.g. RHOB/NPHI)"), use_container_width=True)
-
-if track3:
-    st.plotly_chart(make_track(track3, "Track 3 (e.g. RT)"), use_container_width=True)
+    # === Plot Layout ===
+    st.subheader("📊 Log Tracks")
+    
+    # Plot each track separately, one below the other
+    if track1:
+        st.plotly_chart(make_track(track1, "Track 1 (e.g. GR)", highlight_shale=True), use_container_width=True)
+    
+    if track2:
+        st.plotly_chart(make_track(track2, "Track 2 (e.g. RHOB/NPHI)"), use_container_width=True)
+    
+    if track3:
+        st.plotly_chart(make_track(track3, "Track 3 (e.g. RT)"), use_container_width=True)
 
 
     # === CSV Export ===
