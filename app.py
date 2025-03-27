@@ -21,8 +21,11 @@ with col2:
 st.sidebar.header("⚙️ Options")
 uploaded_file = st.sidebar.file_uploader("Upload a .las file", type=["las"])
 unit_system = st.sidebar.radio("Select Unit System", ("Metric", "Imperial"))
-strip_log_mode = st.sidebar.checkbox("Enable Strip Log Mode (Side-by-Side Tracks)")
+
+# 🔧 Ensure Strip Log Mode toggle appears!
+strip_log_mode = st.sidebar.checkbox("Enable Strip Log Mode (Side-by-Side Tracks)", value=False)
 track_width = st.sidebar.slider("Track Width", min_value=300, max_value=800, value=500)
+
 
 # === Load and parse LAS ===
 if uploaded_file:
