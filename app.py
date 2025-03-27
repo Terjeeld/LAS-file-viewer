@@ -126,9 +126,6 @@ if uploaded_file:
                 valid_data = las[curve][las[curve] != -999.25]  # Remove null values
                 st.sidebar.write(f"✔ {curve}: {len(valid_data)} valid points")
 
-   def make_track(curve_names, title, highlight_shale=False):
-    fig = go.Figure()
-
 def make_track(curve_names, title, highlight_shale=False):
     fig = go.Figure()
 
