@@ -54,15 +54,32 @@ unit_conversions = {
 # === Load and parse LAS ===
 if uploaded_file:
     try:
+        # Read and parse LAS file
         stringio = StringIO(uploaded_file.read().decode("utf-8", errors="ignore"))
         las = lasio.read(stringio)
-        st.success(f"Loaded LAS file: {uploaded_file.name}")
+        st.success(f"✅ Loaded LAS file: {uploaded_file.name}")
     except Exception as e:
-        st.error(f"Failed to read LAS file: {e}")
+        st.error(f"❌ Failed to read LAS file: {e}")
         st.stop()
 
-    curves = las.curves
-    available = [curve.mnemonic for curve in curves]
+    # === Detect Depth Column ===
+    depth_mnemonics = ["DEPT", "DEPTH", "MD", "TVD"]
+    depth_curve = next((mn for mn in depth_mnemonics if mn in las.keys()), None)
+
+    if depth_curve:
+        depth = las[depth_curve]
+    else:
+        st.error("⚠️ No valid depth column found (Checked: DEPT, DEPTH, MD, TVD). Cannot proceed.")
+        st.stop()
+
+    # === Debug Info in Sidebar ===
+    st.sidebar.subheader("🛠 Debug Info")
+    st.sidebar.write(f"✅ Detected Depth Column: **{depth_curve}**")
+    st.sidebar.write(f"📏 Depth Range: {depth.min()} to {depth.max()}")
+    st.sidebar.write(f"🔢 Total Depth Points: {len(depth)}")
+
+    # === Continue with Curve Selection & Plotting ===
+
 
     # === Search bar for quick curve selection ===
     search_query = st.sidebar.text_input("🔍 Search Curves", "")
