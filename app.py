@@ -126,54 +126,37 @@ if uploaded_file:
                 valid_data = las[curve][las[curve] != -999.25]  # Remove null values
                 st.sidebar.write(f"✔ {curve}: {len(valid_data)} valid points")
 
-    def make_track(curve_names, title, highlight_shale=False):
-        fig = go.Figure()
+   def make_track(curve_names, title, highlight_shale=False):
+    fig = go.Figure()
 
-        for curve in curve_names:
-            if curve in las.curves:
-                data = las[curve]
-                unit = las.curves[curve].unit
-                if unit_system == "Imperial" and unit in unit_conversions:
-                    unit_label, convert_fn = unit_conversions[unit]
-                    data = convert_fn(data)
-                else:
-                    unit_label = unit
+    for curve in curve_names:
+        if curve in las.keys():
+            data = las[curve]
+            unit = las.curves[curve].unit
 
-                mask = data != -999.25
-                fig.add_trace(go.Scatter(
-                    x=data[mask],
-                    y=depth[mask],
-                    mode="lines",
-                    name=f"{curve} ({unit_label})"
-                ))
+            # Remove nulls
+            mask = (data != -999.25) & (~np.isnan(data))
 
-                # Shale highlight
-                if highlight_shale and curve == "GR":
-                    gr_threshold = 75
-                    shale_mask = (data > gr_threshold) & (data != -999.25)
-                    fig.add_trace(go.Scatter(
-                        x=data[shale_mask],
-                        y=depth[shale_mask],
-                        mode="lines",
-                        line=dict(color="rgba(0,100,0,0.2)", width=10),
-                        name="Shale Zone",
-                        showlegend=False
-                    ))
+            if mask.sum() == 0:
+                st.warning(f"⚠️ No valid data for {curve}, skipping plot.")
+                continue
 
-        # Add formation tops
-        for top_name, top_depth in tops_dict.items():
-            fig.add_shape(type="line", x0=min(data), x1=max(data), y0=top_depth, y1=top_depth,
-                          line=dict(color="red", width=2, dash="dash"))
-            fig.add_annotation(x=max(data), y=top_depth, text=top_name, showarrow=False, font=dict(color="red"))
+            fig.add_trace(go.Scatter(
+                x=data[mask],
+                y=depth[mask],
+                mode="lines",
+                name=f"{curve} ({unit})"
+            ))
 
-        fig.update_layout(
-            title=title,
-            yaxis=dict(title=f"Depth ({depth_unit})", autorange="reversed"),
-            height=800,
-            margin=dict(l=10, r=10, t=30, b=10),
-            showlegend=True
-        )
-        return fig
+    fig.update_layout(
+        title=title,
+        yaxis=dict(title="Depth", autorange="reversed"),
+        height=800,
+        margin=dict(l=10, r=10, t=30, b=10),
+        showlegend=True
+    )
+    return fig
+
 
     # === Plot Layout ===
     st.subheader("📊 Log Tracks")
