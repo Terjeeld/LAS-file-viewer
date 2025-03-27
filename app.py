@@ -129,6 +129,9 @@ if uploaded_file:
    def make_track(curve_names, title, highlight_shale=False):
     fig = go.Figure()
 
+def make_track(curve_names, title, highlight_shale=False):
+    fig = go.Figure()
+
     for curve in curve_names:
         if curve in las.keys():
             data = las[curve]
